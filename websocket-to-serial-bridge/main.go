@@ -12,7 +12,7 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow all origins, but you can restrict this in production
+		return true // Allow all origins
 	},
 }
 
@@ -21,8 +21,8 @@ func main() {
 	http.HandleFunc("/ws", handleWebSocket)
 
 	// Start WebSocket server
-	fmt.Println("WebSocket server listening on :8081")
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	fmt.Println("WebSocket server listening on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 // WebSocket handler
@@ -35,7 +35,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	// Open serial port (adjust the settings as per your serial device)
+	// Open the serial port
 	port, err := openSerialPort("/dev/cu.usbmodemDC5475C560D42", 19200)
 	if err != nil {
 		log.Println("Error opening serial port:", err)
@@ -61,7 +61,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Function to open and configure the serial port
+// Oopen and configure the serial port
 func openSerialPort(portName string, baudRate int) (serial.Port, error) {
 	mode := &serial.Mode{
 		BaudRate: baudRate,
@@ -77,7 +77,7 @@ func openSerialPort(portName string, baudRate int) (serial.Port, error) {
 	}
 
 	for _, p := range ports {
-		fmt.Printf("Found port: %s\n", p.Name)
+		fmt.Printf("Found ports: %s\n", p.Name)
 	}
 
 	port, err := serial.Open(portName, mode)
