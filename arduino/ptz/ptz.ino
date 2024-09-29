@@ -8,6 +8,8 @@ const byte dirPin2 = D6;
 
 const int stepsPerRev = 1600; // Steps per revolution, needs to take into account microstepping
 
+auto yMovingUp = false;
+
 MoToStepper stepper1( stepsPerRev, STEPDIR );
 MoToStepper stepper2( stepsPerRev, STEPDIR );
 
@@ -30,11 +32,24 @@ void setup() {
 
   stepper2.attach(stepPin2, dirPin2);
   stepper2.setSpeed(0);
+
+  pinMode(D10, INPUT_PULLUP);
+  pinMode(D13, OUTPUT);  
 }
 
 void loop() {
 
   timer.tick();
+
+  int val = digitalRead(D10);   // read the input pin
+  // Serial.println(val);
+  digitalWrite(D13, val);  // sets the LED to the button's value
+
+  if ((val == 1) && (!yMovingUp)) {
+    // Serial.println("Hit limit switch, stopping downward movement.");
+    stepper1.rotate(0);
+    stepper1.setSpeed(0);
+  }
 
   if (Serial.available() > 0) {
     String str = Serial.readString();
@@ -54,12 +69,22 @@ void loop() {
     }
 
     if (y > 0) {
-      stepper1.rotate(1);
-      stepper1.setSpeed(y);
+      // Check for limit switch
+      if (val == 1) {
+        // Serial.println("Already hit limit switch, can't move further down.");
+        stepper1.rotate(0);
+        stepper1.setSpeed(0);
+      }
+      else {
+        stepper1.rotate(1);
+        stepper1.setSpeed(y);
+        yMovingUp = false;
+      }
     } 
     else {
       stepper1.setSpeed(-y);
       stepper1.rotate(-1);
+      yMovingUp = true;
     }
   }
 }
